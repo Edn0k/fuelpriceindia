@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+
+  --color-bg: 0 0 0;
+  --color-surface: 10 10 10;
+  --color-card: 17 17 17;
+  --color-primary: 255 122 0;
+  --color-success: 0 210 106;
+  --color-text: 255 255 255;
+  --color-muted: 199 199 199;
+  --color-border: 255 255 255;
+}
+
+body {
+  @apply bg-background text-text antialiased;
+}

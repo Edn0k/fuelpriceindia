@@ -1,0 +1,60 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="pumpMask">
+      <rect x="290" y="140" width="330" height="700" rx="74" fill="#FFFFFF" />
+      <rect x="345" y="205" width="220" height="165" rx="22" fill="#000000" />
+    </mask>
+    <clipPath id="flagClip" clipPathUnits="userSpaceOnUse">
+      <path d="M0 10 Q45 0 90 10 T180 10 V104 Q135 114 90 104 T0 104 Z" />
+    </clipPath>
+  </defs>
+
+  <g>
+    <rect x="290" y="140" width="330" height="700" rx="74" fill="#000000" mask="url(#pumpMask)" />
+    <rect x="235" y="790" width="440" height="94" rx="47" fill="#000000" />
+
+    <path
+      d="M620 360 C700 360 730 400 730 460 V600 C730 700 670 740 600 740 C530 740 500 690 500 630 V470 C500 410 530 380 590 380"
+      stroke="#000000"
+      stroke-width="60"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="none"
+    />
+
+    <path
+      d="M768 330 L850 248 L886 286 L815 360 L792 392 L744 344 Z"
+      fill="#000000"
+    />
+    <path
+      d="M810 300 L835 275 L858 298 L833 323 Z"
+      fill="#FFFFFF"
+      opacity="0"
+    />
+
+    <g transform="translate(420 620) scale(1.85)">
+      <g clip-path="url(#flagClip)">
+        <rect x="0" y="0" width="180" height="114" fill="#FFFFFF" />
+        <rect x="0" y="0" width="180" height="38" fill="#FF9933" />
+        <rect x="0" y="76" width="180" height="38" fill="#138808" />
+        <path d="M0 38 H180" stroke="#000000" stroke-width="4" opacity="0.18" />
+        <path d="M0 76 H180" stroke="#000000" stroke-width="4" opacity="0.18" />
+        <g transform="translate(90 57)">
+          <circle cx="0" cy="0" r="20" stroke="#000080" stroke-width="5.5" fill="none" />
+          <circle cx="0" cy="0" r="2.8" fill="#000080" />
+          <g stroke="#000080" stroke-width="2.6" stroke-linecap="round">
+            <line x1="0" y1="-20" x2="0" y2="-7" />
+            <line x1="0" y1="20" x2="0" y2="7" />
+            <line x1="-20" y1="0" x2="-7" y2="0" />
+            <line x1="20" y1="0" x2="7" y2="0" />
+            <line x1="14.1" y1="-14.1" x2="5.1" y2="-5.1" />
+            <line x1="-14.1" y1="14.1" x2="-5.1" y2="5.1" />
+            <line x1="-14.1" y1="-14.1" x2="-5.1" y2="-5.1" />
+            <line x1="14.1" y1="14.1" x2="5.1" y2="5.1" />
+          </g>
+        </g>
+      </g>
+      <path d="M0 10 Q45 0 90 10 T180 10 V104 Q135 114 90 104 T0 104 Z" fill="none" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
+    </g>
+  </g>
+</svg>

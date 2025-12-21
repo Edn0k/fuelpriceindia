@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://fuelpriceindia.in/sitemap.xml

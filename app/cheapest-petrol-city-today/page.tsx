@@ -8,7 +8,8 @@ export const metadata: Metadata = {
     "Find the city with the lowest petrol price in India today. Updated daily using verified fuel price data.",
 };
 
-export const revalidate = 60 * 60 * 24;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function getIndiaDateString(d: Date): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -31,12 +32,22 @@ type CheapestRow = {
 };
 
 export default async function CheapestPetrolCityTodayPage() {
+  const { data: latestDateData, error: latestDateError } = await supabaseServiceClient
+    .from("fuel_prices")
+    .select("date")
+    .order("date", { ascending: false })
+    .limit(1);
+
+  if (latestDateError) throw latestDateError;
+
+  const latestDate = (latestDateData ?? [])?.[0]?.date ?? null;
   const todayStr = getIndiaDateString(new Date());
+  const snapshotDate = latestDate || todayStr;
 
   const { data, error } = await supabaseServiceClient
     .from("fuel_prices")
     .select("state_code,city_name,date,petrol_price")
-    .eq("date", todayStr)
+    .eq("date", snapshotDate)
     .not("petrol_price", "is", null)
     .gte("petrol_price", 40)
     .lte("petrol_price", 250)
@@ -69,12 +80,17 @@ export default async function CheapestPetrolCityTodayPage() {
           We calculate this by comparing today’s verified petrol prices across
           Indian cities and selecting the lowest available price.
         </p>
+        <p className="text-xs text-muted/80">Latest snapshot date: {snapshotDate}</p>
       </header>
 
       <section className="rounded-2xl border border-border/10 bg-card p-4">
-        {!cheapest ? (
+        {!latestDate ? (
           <p className="text-sm text-muted">
-            We don’t have today’s petrol price data yet. Please check back later.
+            We don’t have petrol price data yet. Please check back later.
+          </p>
+        ) : !cheapest ? (
+          <p className="text-sm text-muted">
+            We don’t have petrol price data for the latest date yet. Please check back later.
           </p>
         ) : (
           <div className="space-y-2">
@@ -111,7 +127,7 @@ export default async function CheapestPetrolCityTodayPage() {
               <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Last updated
               </h2>
-              <p className="mt-1 text-sm text-muted">{todayStr}</p>
+              <p className="mt-1 text-sm text-muted">{cheapest.date}</p>
             </div>
           </div>
         )}

@@ -239,7 +239,7 @@ async function fetchSingleFuelFromPage(url: string, fuel: "petrol" | "diesel" | 
         const unitMatch = (txt: string) => {
             const t = (txt || "").toLowerCase();
             if (fuel === "petrol" || fuel === "diesel") return /\bltr\b/.test(t);
-            if (fuel === "cng") return /\bkg\b/.test(t) && !t.includes("14.2");
+            if (fuel === "cng") return /\bkg\b/.test(t) && !t.includes("lpg") && !t.includes("14.2 kg");
             // LPG is typically shown per 14.2 kg cylinder on Goodreturns.
             if (fuel === "lpg") return t.includes("14.2") && t.includes("kg");
             return false;
@@ -251,8 +251,8 @@ async function fetchSingleFuelFromPage(url: string, fuel: "petrol" | "diesel" | 
 
         const chosenEl =
             priceEls.find((el: any) => unitMatch($(el).text())) ??
-            // If unit matching fails (layout variations), take the first block as a last resort.
-            priceEls[0] ??
+            // Only petrol/diesel are safe to fall back to the first block.
+            ((fuel === "petrol" || fuel === "diesel") ? priceEls[0] : null) ??
             null;
 
         if (chosenEl) {
@@ -263,6 +263,9 @@ async function fetchSingleFuelFromPage(url: string, fuel: "petrol" | "diesel" | 
 
             const mainBlockText = $(chosenEl).text().trim();
             if (mainBlockText) {
+                if ((fuel === "lpg" || fuel === "cng") && !unitMatch(mainBlockText)) {
+                    return { price: null, updatedDate: pageUpdatedDate };
+                }
                 const mainPrice = parsePrice(mainBlockText);
                 if (mainPrice != null) {
                     if (fuel === "lpg" && mainPrice < 100) {
@@ -468,33 +471,36 @@ async function fetchCityPriceMapFromStatePage(
             const cityNorm = normalizeCityName(city);
             if (!cityNorm || map[cityNorm]) return;
 
-            const candidates = parts
-                .map((p) => ({
-                    p,
-                    n: parsePrice(p),
-                    hasRupee: p.includes("₹"),
-                }))
-                .filter((c) => Number.isFinite(c.n as any))
-                .map((c) => ({ ...c, n: c.n as number }))
-                .map((c) => {
-                    if (fuelFromUrl === "lpg" && c.n < minPrice) {
-                        const converted = c.n * 14.2;
-                        if (converted >= minPrice && converted <= maxPrice) {
-                            return { ...c, n: converted };
-                        }
+            // Prefer the row's price cell(s) instead of scanning all numeric tokens,
+            // which can accidentally pick unrelated numbers (e.g., 14.2kg, years).
+            const afterCity = parts.filter((p) => p !== cityCandidate);
+            const priceText = afterCity.find((p) => {
+                const t = (p || "").toLowerCase();
+                if (!/\d/.test(t)) return false;
+                if (/\b(kg|ltr|litre|liter)\b/.test(t) && !t.includes("₹") && !/\brs\b|\binr\b/i.test(t)) {
+                    return false;
+                }
+                return true;
+            });
+
+            if (!priceText) return;
+
+            let price = parsePrice(priceText);
+            if (price == null) return;
+
+            if (fuelFromUrl === "lpg" && price < minPrice) {
+                const t = priceText.toLowerCase();
+                if (/\bkg\b/.test(t) && !t.includes("14.2")) {
+                    const converted = price * 14.2;
+                    if (converted >= minPrice && converted <= maxPrice) {
+                        price = converted;
                     }
-                    return c;
-                })
-                .filter((c) => c.n >= minPrice && c.n <= maxPrice);
+                }
+            }
 
-            if (!candidates.length) return;
+            if (price < minPrice || price > maxPrice) return;
 
-            const rupeeCandidates = candidates.filter((c) => c.hasRupee);
-            const chosen = (rupeeCandidates.length ? rupeeCandidates : candidates).reduce((best, cur) =>
-                cur.n > best.n ? cur : best,
-            );
-
-            map[cityNorm] = { city, price: chosen.n };
+            map[cityNorm] = { city, price };
         };
 
         const findHeadingText = (tableEl: any) => {
